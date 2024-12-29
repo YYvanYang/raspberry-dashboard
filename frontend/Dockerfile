@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/root/.npm \
 COPY . .
 RUN npm run build
 
-FROM nginx:alpine
+FROM node:20-alpine
 
 # 添加运行时依赖
 RUN apk add --no-cache tzdata curl
@@ -23,22 +23,29 @@ RUN apk add --no-cache tzdata curl
 # 创建非 root 用户
 RUN adduser -D -u 1000 appuser
 
-# 配置 Nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=builder /app/build /usr/share/nginx/html
+WORKDIR /app
+
+# 只复制必要的文件
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/build ./build
+
+# 只安装生产依赖
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --omit=dev
 
 # 设置文件权限
-RUN chown -R appuser:appuser /usr/share/nginx/html && \
-    chmod -R 550 /usr/share/nginx/html && \
-    touch /var/run/nginx.pid && \
-    chown -R appuser:appuser /var/run/nginx.pid && \
-    chown -R appuser:appuser /var/cache/nginx
+RUN chown -R appuser:appuser /app
 
 # 切换到非 root 用户
 USER appuser
 
-EXPOSE 80
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:80 || exit 1
+# 设置环境变量
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV ORIGIN=http://localhost:3000
 
-CMD ["nginx", "-g", "daemon off;"] 
+EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+CMD ["node", "build"] 
