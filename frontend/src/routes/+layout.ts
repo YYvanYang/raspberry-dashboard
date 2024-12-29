@@ -1,3 +1,7 @@
+// SPA 模式配置
+export const ssr = false;        // 禁用服务端渲染
+export const prerender = false;  // SPA 模式下不需要预渲染
+
 import { redirect } from '@sveltejs/kit';
 import type { LayoutLoad } from './$types';
 import { browser } from '$app/environment';
