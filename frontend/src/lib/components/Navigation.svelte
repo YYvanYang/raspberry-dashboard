@@ -1,6 +1,8 @@
 <script lang="ts">
-    import { page } from "$app/stores";
+    import { getStores } from "$app/stores";
     import { goto } from "$app/navigation";
+
+    const { page } = getStores();
 
     const menuItems = [
         { href: "/dashboard", label: "仪表盘", icon: "home" },
@@ -72,7 +74,7 @@
             <!-- User Dropdown -->
             <div class="flex items-center">
                 <button
-                    on:click={logout}
+                    onclick={logout}
                     class="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
                 >
                     退出登录

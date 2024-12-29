@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { onMount } from "svelte";
     import { api } from "$lib/utils/api";
     import { notifications } from "$lib/stores/notifications";
     import StatusCard from "$lib/components/StatusCard.svelte";

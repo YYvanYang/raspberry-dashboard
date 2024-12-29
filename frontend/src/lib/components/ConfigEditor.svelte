@@ -1,12 +1,10 @@
 <script lang="ts">
-    interface Props {
+    const { service, config, onSave } = $props<{
         service: string;
         config: Record<string, any>;
         onSave: (config: Record<string, any>) => Promise<void>;
-    }
+    }>();
 
-    const props = $props() as Props;
-    const { service, config, onSave } = props;
     let editingConfig = $state(JSON.stringify(config, null, 2));
     let error = $state('');
 

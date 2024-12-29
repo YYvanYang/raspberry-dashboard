@@ -39,21 +39,21 @@
                         </div>
                         <div class="flex space-x-2">
                             <button
-                                on:click={() => handleServiceAction(service.name, 'restart')}
+                                onclick={() => handleServiceAction(service.name, 'restart')}
                                 class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
                             >
                                 Restart
                             </button>
                             {#if service.running}
                                 <button
-                                    on:click={() => handleServiceAction(service.name, 'stop')}
+                                    onclick={() => handleServiceAction(service.name, 'stop')}
                                     class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
                                 >
                                     Stop
                                 </button>
                             {:else}
                                 <button
-                                    on:click={() => handleServiceAction(service.name, 'start')}
+                                    onclick={() => handleServiceAction(service.name, 'start')}
                                     class="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
                                 >
                                     Start
