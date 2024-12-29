@@ -1,30 +1,26 @@
 #!/bin/bash
 
-# 备份配置
-BACKUP_DIR="/backup/db"
-DATA_DIR="/app/data"
-MAX_BACKUPS=7
-DATE=$(date +%Y%m%d_%H%M%S)
+# 设置变量
+RASPBERRY_PI_HOST="your-raspberry-pi-host"  # 替换为您的树莓派地址
+RASPBERRY_PI_USER="pi"                      # 替换为您的树莓派用户名
+BACKUP_DIR="backups"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
-# 创建备份目录
-mkdir -p $BACKUP_DIR
+# 创建本地备份目录
+mkdir -p ${BACKUP_DIR}
 
-# 等待数据库解锁
-while [ -f $DATA_DIR/dashboard.db-wal ]; do
-    sleep 1
-done
+# 在树莓派上执行备份
+echo "Creating backup on Raspberry Pi..."
+ssh ${RASPBERRY_PI_USER}@${RASPBERRY_PI_HOST} << 'EOF'
+    cd /data/dashboard
+    tar czf dashboard_backup_${TIMESTAMP}.tar.gz data/
+EOF
 
-# 创建备份
-cp $DATA_DIR/dashboard.db $BACKUP_DIR/dashboard_${DATE}.db
-gzip $BACKUP_DIR/dashboard_${DATE}.db
+# 下载备份文件
+echo "Downloading backup..."
+scp ${RASPBERRY_PI_USER}@${RASPBERRY_PI_HOST}:/data/dashboard/dashboard_backup_${TIMESTAMP}.tar.gz ${BACKUP_DIR}/
 
-# 清理旧备份
-find $BACKUP_DIR -name "dashboard_*.db.gz" -mtime +$MAX_BACKUPS -delete
+# 清理远程备份文件
+ssh ${RASPBERRY_PI_USER}@${RASPBERRY_PI_HOST} "rm /data/dashboard/dashboard_backup_${TIMESTAMP}.tar.gz"
 
-# 检查备份是否成功
-if [ $? -eq 0 ]; then
-    echo "Backup completed successfully: dashboard_${DATE}.db.gz"
-else
-    echo "Backup failed!"
-    exit 1
-fi 
+echo "Backup completed successfully! Saved to ${BACKUP_DIR}/dashboard_backup_${TIMESTAMP}.tar.gz" 
