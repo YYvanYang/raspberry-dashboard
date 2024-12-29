@@ -60,6 +60,7 @@ func (s *Server) setupRoutes() {
     auth := protected.Group("/auth")
     auth.Post("/logout", s.handleLogout)
     auth.Get("/profile", s.handleGetProfile)
+    auth.Post("/change-password", s.handleChangePassword)
     
     // 配置管理
     configs := protected.Group("/configs")

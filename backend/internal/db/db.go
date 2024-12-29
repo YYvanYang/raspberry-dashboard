@@ -7,6 +7,7 @@ import (
     "path/filepath"
     "time"
     _ "github.com/mattn/go-sqlite3"
+    "github.com/your-project/utils"
 )
 
 type DB struct {
@@ -92,6 +93,30 @@ func (db *DB) InitSchema() error {
         }
     }
 
+    // 检查是否需要创建默认管理员账户
+    var count int
+    if err := db.db.QueryRow("SELECT COUNT(*) FROM users").Scan(&count); err != nil {
+        return fmt.Errorf("failed to check users count: %w", err)
+    }
+
+    if count == 0 {
+        // 创建默认管理员账户
+        defaultPassword := "admin123"  // 默认密码
+        hashedPassword, err := utils.HashPassword(defaultPassword)
+        if err != nil {
+            return fmt.Errorf("failed to hash default password: %w", err)
+        }
+
+        _, err = db.db.Exec(
+            "INSERT INTO users (username, password_hash) VALUES (?, ?)",
+            "admin",
+            hashedPassword,
+        )
+        if err != nil {
+            return fmt.Errorf("failed to create default admin user: %w", err)
+        }
+    }
+
     return nil
 }
 
@@ -115,4 +140,49 @@ func (db *DB) Transaction(fn func(*sql.Tx) error) error {
     }
 
     return tx.Commit()
+}
+
+// UpdatePassword 更新用户密码
+func (db *DB) UpdatePassword(username string, newPasswordHash string) error {
+    result, err := db.db.Exec(
+        "UPDATE users SET password_hash = ? WHERE username = ?",
+        newPasswordHash,
+        username,
+    )
+    if err != nil {
+        return fmt.Errorf("failed to update password: %w", err)
+    }
+
+    rows, err := result.RowsAffected()
+    if err != nil {
+        return fmt.Errorf("failed to get affected rows: %w", err)
+    }
+
+    if rows == 0 {
+        return fmt.Errorf("user not found")
+    }
+
+    return nil
+}
+
+// VerifyPassword 验证用户当前密码
+func (db *DB) VerifyPassword(username string, password string) error {
+    var storedHash string
+    err := db.db.QueryRow(
+        "SELECT password_hash FROM users WHERE username = ?",
+        username,
+    ).Scan(&storedHash)
+    
+    if err != nil {
+        if err == sql.ErrNoRows {
+            return fmt.Errorf("user not found")
+        }
+        return fmt.Errorf("failed to get user password: %w", err)
+    }
+
+    if !utils.CheckPasswordHash(password, storedHash) {
+        return fmt.Errorf("invalid password")
+    }
+
+    return nil
 } 
