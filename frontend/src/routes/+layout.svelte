@@ -1,10 +1,17 @@
 <script lang="ts">
+    import '../app.css';
+    import ErrorBoundary from '$lib/components/ErrorBoundary.svelte';
     import Notifications from '$lib/components/Notifications.svelte';
+    import type { LayoutData } from './$types';
+    import type { Snippet } from 'svelte';
     
-    const slots = $props<{
-        default?: () => unknown;
+    const props = $props<{
+        data: LayoutData;
+        children: Snippet;
     }>();
 </script>
 
-<Notifications />
-{@render slots.default?.()} 
+<ErrorBoundary>
+    <Notifications />
+    {@render props.children()}
+</ErrorBoundary> 

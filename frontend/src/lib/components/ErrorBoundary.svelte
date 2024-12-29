@@ -1,8 +1,10 @@
 <script lang="ts">
     import { notifications } from '$lib/stores/notifications';
     import { dev } from '$app/environment';
+    import type { Snippet } from 'svelte';
     
     let error = $state<Error | null>(null);
+    let { children } = $props<{ children: Snippet }>();
     
     $effect(() => {
         const handleError = (event: ErrorEvent) => {
@@ -18,10 +20,6 @@
             window.removeEventListener('error', handleError);
         };
     });
-
-    const slots = $props<{
-        default?: () => unknown;
-    }>();
 </script>
 
 {#if error}
@@ -32,5 +30,5 @@
         {/if}
     </div>
 {:else}
-    {@render slots.default?.()}
+    {@render children()}
 {/if} 
