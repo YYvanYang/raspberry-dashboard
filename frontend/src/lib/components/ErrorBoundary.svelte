@@ -1,5 +1,6 @@
 <script lang="ts">
     import { notifications } from '$lib/stores/notifications';
+    import { dev } from '$app/environment';
     
     let error = $state<Error | null>(null);
     
@@ -26,7 +27,7 @@
 {#if error}
     <div class="bg-red-50 p-4 rounded-md">
         <p class="text-red-700">Something went wrong</p>
-        {#if import.meta.env.DEV}
+        {#if dev}
             <pre class="mt-2 text-sm text-red-600">{error.stack}</pre>
         {/if}
     </div>

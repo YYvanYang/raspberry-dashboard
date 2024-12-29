@@ -1,10 +1,10 @@
 <script lang="ts">
-    const { filter } = $props<{
+    let { filter = $bindable() } = $props<{
         filter: {
             type: string;
             search: string;
             dateRange: string;
-        };
+        }
     }>();
 
     const types = ["all", "info", "warning", "error"];

@@ -1,9 +1,11 @@
+import { env } from '$env/dynamic/public';
+
 export type ApiError = {
     error: string;
     status: number;
 };
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = env.PUBLIC_API_URL || 'http://localhost:3001';
 
 async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
     const token = localStorage.getItem('token');
@@ -43,12 +45,12 @@ async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
 export const api = {
     get: (endpoint: string) => fetchWithAuth(endpoint),
     
-    post: (endpoint: string, data?: any) => fetchWithAuth(endpoint, {
+    post: <T extends Record<string, unknown>>(endpoint: string, data?: T) => fetchWithAuth(endpoint, {
         method: 'POST',
         body: data ? JSON.stringify(data) : undefined,
     }),
     
-    put: (endpoint: string, data?: any) => fetchWithAuth(endpoint, {
+    put: <T extends Record<string, unknown>>(endpoint: string, data?: T) => fetchWithAuth(endpoint, {
         method: 'PUT',
         body: data ? JSON.stringify(data) : undefined,
     }),

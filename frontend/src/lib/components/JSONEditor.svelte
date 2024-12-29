@@ -1,14 +1,10 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { createEventDispatcher } from 'svelte';
     import * as monaco from 'monaco-editor';
 
-    const dispatch = createEventDispatcher<{
-        update: { value: string };
-    }>();
-
-    const { value } = $props<{
+    const { value, onChange } = $props<{
         value: string;
+        onChange?: (value: string) => void;
     }>();
 
     let editor: monaco.editor.IStandaloneCodeEditor;
@@ -29,7 +25,7 @@
             editor.onDidChangeModelContent(() => {
                 const newValue = editor.getValue();
                 if (newValue !== value) {
-                    dispatch('update', { value: newValue });
+                    onChange?.(newValue);
                 }
             });
         }
