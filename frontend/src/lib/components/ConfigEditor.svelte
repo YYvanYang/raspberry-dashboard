@@ -1,43 +1,50 @@
 <script lang="ts">
-    import { createEventDispatcher } from "svelte";
-    import JSONEditor from "$lib/components/JSONEditor.svelte";
-    
-    export let service: string;
-    export let config: any;
-    
-    const dispatch = createEventDispatcher();
-    let editedConfig = JSON.stringify(config, null, 2);
-    let error = "";
-    
-    function handleSave() {
+    interface Props {
+        service: string;
+        config: Record<string, any>;
+        onSave: (config: Record<string, any>) => Promise<void>;
+    }
+
+    const props = $props() as Props;
+    const { service, config, onSave } = props;
+    let editingConfig = $state(JSON.stringify(config, null, 2));
+    let error = $state('');
+
+    async function handleSave() {
         try {
-            const parsedConfig = JSON.parse(editedConfig);
-            dispatch("save", parsedConfig);
-            error = "";
-        } catch (e) {
-            error = "Invalid JSON format";
+            const parsedConfig = JSON.parse(editingConfig);
+            await onSave(parsedConfig);
+            error = '';
+        } catch (err) {
+            if (err instanceof SyntaxError) {
+                error = '配置格式错误，请检查 JSON 格式';
+            } else {
+                error = '保存失败';
+            }
         }
     }
 </script>
 
-<div class="h-full flex flex-col">
-    <div class="p-4 border-b flex justify-between items-center">
-        <h2 class="text-lg font-medium">{service} Configuration</h2>
+<div class="p-4">
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-gray-900">{service} 配置</h3>
         <button
-            on:click={handleSave}
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            onclick={handleSave}
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-            Save Changes
+            保存
         </button>
     </div>
-    
+
     {#if error}
-        <div class="p-4 bg-red-50 text-red-700">
+        <div class="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
             {error}
         </div>
     {/if}
-    
-    <div class="flex-1 p-4">
-        <JSONEditor bind:value={editedConfig} />
-    </div>
+
+    <textarea
+        bind:value={editingConfig}
+        class="w-full h-[500px] font-mono text-sm p-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        spellcheck="false"
+    ></textarea>
 </div> 

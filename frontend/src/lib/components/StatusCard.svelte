@@ -1,14 +1,16 @@
 <script lang="ts">
-    export let title: string;
-    export let value: string;
-    export let icon: string;
+    const { title, value, icon } = $props<{
+        title: string;
+        value: string;
+        icon: string;
+    }>();
 </script>
 
 <div class="bg-white overflow-hidden shadow rounded-lg">
     <div class="p-5">
         <div class="flex items-center">
             <div class="flex-shrink-0">
-                <!-- Add your icon component here -->
+                <i class={`${icon} text-2xl text-gray-400`}></i>
             </div>
             <div class="ml-5 w-0 flex-1">
                 <dl>

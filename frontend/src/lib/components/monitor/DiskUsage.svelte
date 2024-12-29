@@ -1,65 +1,45 @@
 <script lang="ts">
-    export let disk: {
-        total: number;
-        used: number;
-        free: number;
-        usage_rate: number;
-    };
+    const { disk } = $props<{
+        disk: {
+            total: number;
+            used: number;
+            free: number;
+            usage_rate: number;
+            mount_point: string;
+        };
+    }>();
 
-    function formatSize(bytes: number): string {
-        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        let size = bytes;
-        let unitIndex = 0;
-
-        while (size >= 1024 && unitIndex < units.length - 1) {
-            size /= 1024;
-            unitIndex++;
-        }
-
-        return `${size.toFixed(2)} ${units[unitIndex]}`;
-    }
-
-    function getUsageColor(rate: number): string {
-        if (rate >= 90) return 'text-red-600';
-        if (rate >= 80) return 'text-orange-500';
-        if (rate >= 70) return 'text-yellow-500';
-        return 'text-green-500';
-    }
+    const usagePercent = $derived(disk.usage_rate.toFixed(1));
 </script>
 
 <div class="bg-white overflow-hidden shadow rounded-lg">
     <div class="p-5">
-        <div class="flex flex-col">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900">Disk Usage</h3>
-                <span class={`text-sm font-semibold ${getUsageColor(disk.usage_rate)}`}>
-                    {disk.usage_rate.toFixed(1)}%
-                </span>
+        <div class="flex flex-col gap-4">
+            <div>
+                <div class="text-sm font-medium text-gray-500">Mount Point</div>
+                <div class="mt-1 text-lg font-semibold text-gray-900">{disk.mount_point}</div>
             </div>
-            
-            <div class="relative pt-1">
-                <div class="overflow-hidden h-2 text-xs flex rounded bg-gray-200">
-                    <div
-                        style="width: {disk.usage_rate}%"
-                        class={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${
-                            getUsageColor(disk.usage_rate).replace('text-', 'bg-')
-                        }`}
-                    ></div>
+            <div>
+                <div class="text-sm font-medium text-gray-500">Usage</div>
+                <div class="mt-1 flex items-center">
+                    <div class="text-2xl font-semibold text-gray-900">{usagePercent}%</div>
+                    <div class="ml-2 w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-purple-600 h-2.5 rounded-full" style="width: {usagePercent}%"></div>
+                    </div>
                 </div>
             </div>
-
-            <div class="mt-4 grid grid-cols-3 gap-4 text-sm">
+            <div class="grid grid-cols-3 gap-4">
                 <div>
-                    <span class="block text-gray-500">Total</span>
-                    <span class="block font-medium">{formatSize(disk.total)}</span>
+                    <div class="text-sm font-medium text-gray-500">Total</div>
+                    <div class="mt-1 text-lg font-semibold text-gray-900">{(disk.total / 1024 / 1024 / 1024).toFixed(1)} GB</div>
                 </div>
                 <div>
-                    <span class="block text-gray-500">Used</span>
-                    <span class="block font-medium">{formatSize(disk.used)}</span>
+                    <div class="text-sm font-medium text-gray-500">Used</div>
+                    <div class="mt-1 text-lg font-semibold text-gray-900">{(disk.used / 1024 / 1024 / 1024).toFixed(1)} GB</div>
                 </div>
                 <div>
-                    <span class="block text-gray-500">Free</span>
-                    <span class="block font-medium">{formatSize(disk.free)}</span>
+                    <div class="text-sm font-medium text-gray-500">Free</div>
+                    <div class="mt-1 text-lg font-semibold text-gray-900">{(disk.free / 1024 / 1024 / 1024).toFixed(1)} GB</div>
                 </div>
             </div>
         </div>

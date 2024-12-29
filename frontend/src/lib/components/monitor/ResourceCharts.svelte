@@ -23,14 +23,21 @@
         Filler
     );
 
-    export let data: any[] = [];
+    const { data } = $props<{
+        data: {
+            cpu: number;
+            memory: {
+                usage_rate: number;
+            };
+        }[];
+    }>();
 
-    $: chartData = {
-        labels: data.map(() => ''),  // 使用空标签，因为我们有足够的数据点
+    const chartData = $derived({
+        labels: data.map((d: { cpu: number; memory: { usage_rate: number } }) => ''),  // 使用空标签，因为我们有足够的数据点
         datasets: [
             {
                 label: 'CPU Usage',
-                data: data.map(d => d.cpu),
+                data: data.map((d: { cpu: number; memory: { usage_rate: number } }) => d.cpu),
                 borderColor: 'rgb(59, 130, 246)',
                 backgroundColor: 'rgba(59, 130, 246, 0.1)',
                 fill: true,
@@ -38,14 +45,14 @@
             },
             {
                 label: 'Memory Usage',
-                data: data.map(d => d.memory.usage_rate),
+                data: data.map((d: { cpu: number; memory: { usage_rate: number } }) => d.memory.usage_rate),
                 borderColor: 'rgb(34, 197, 94)',
                 backgroundColor: 'rgba(34, 197, 94, 0.1)',
                 fill: true,
                 tension: 0.3
             }
         ]
-    };
+    });
 
     const options = {
         responsive: true,

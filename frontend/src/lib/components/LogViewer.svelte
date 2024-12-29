@@ -1,6 +1,12 @@
 <script lang="ts">
-    export let logs: any[];
-    export let loading: boolean;
+    const { logs, loading } = $props<{
+        logs: {
+            type: string;
+            message: string;
+            created_at: string;
+        }[];
+        loading: boolean;
+    }>();
 
     function getLogTypeColor(type: string): string {
         switch (type.toLowerCase()) {

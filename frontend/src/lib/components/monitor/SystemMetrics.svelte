@@ -1,9 +1,19 @@
 <script lang="ts">
-    export let metrics: any;
+    const { metrics } = $props<{
+        metrics: {
+            cpu?: number;
+            memory?: {
+                usage_rate?: number;
+            };
+            disk?: {
+                usage_rate?: number;
+            };
+        };
+    }>();
 
-    $: cpuUsage = metrics?.cpu?.toFixed(1) || 0;
-    $: memoryUsage = metrics?.memory?.usage_rate?.toFixed(1) || 0;
-    $: diskUsage = metrics?.disk?.usage_rate?.toFixed(1) || 0;
+    const cpuUsage = $derived(metrics?.cpu?.toFixed(1) || 0);
+    const memoryUsage = $derived(metrics?.memory?.usage_rate?.toFixed(1) || 0);
+    const diskUsage = $derived(metrics?.disk?.usage_rate?.toFixed(1) || 0);
 </script>
 
 <div class="bg-white overflow-hidden shadow rounded-lg">

@@ -1,28 +1,46 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { api } from "$lib/utils/api";
+    import { notifications } from "$lib/stores/notifications";
     import StatusCard from "$lib/components/StatusCard.svelte";
-    import ServiceList from "$lib/components/ServiceList.svelte";
     import SystemChart from "$lib/components/SystemChart.svelte";
-    
-    let systemStatus: any = null;
-    let loading = true;
-    
+
+    interface SystemStatus {
+        cpu: {
+            usage: number;
+        };
+        memory: {
+            usage: number;
+        };
+        disk: {
+            usage: number;
+        };
+        history: {
+            labels: string[];
+            datasets: Array<{
+                data: number[];
+            }>;
+        };
+    }
+
+    let systemStatus = $state<SystemStatus | null>(null);
+    let loading = $state(true);
+
     async function fetchStatus() {
         try {
-            const response = await api.get("/system/status");
+            const response = await api.get('/api/system/status');
             systemStatus = response.data;
         } catch (error) {
-            console.error("Failed to fetch status:", error);
+            notifications.error('获取系统状态失败');
+            console.error('Error fetching status:', error);
         } finally {
             loading = false;
         }
     }
-    
-    onMount(() => {
+
+    $effect(() => {
         fetchStatus();
-        const interval = setInterval(fetchStatus, 30000); // 每30秒更新一次
-        
+        const interval = setInterval(fetchStatus, 5000);
         return () => clearInterval(interval);
     });
 </script>
@@ -42,37 +60,32 @@
 
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {#if loading}
-            <div class="text-center">Loading...</div>
+            <div class="flex justify-center items-center h-64">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
         {:else if systemStatus}
-            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                <StatusCard
-                    title="CPU Usage"
-                    value="{systemStatus.cpu.toFixed(1)}%"
-                    icon="cpu"
-                />
-                <StatusCard
-                    title="Memory Usage"
-                    value="{systemStatus.memory.usageRate.toFixed(1)}%"
-                    icon="memory"
-                />
-                <StatusCard
-                    title="Disk Usage"
-                    value="{systemStatus.disk.usageRate.toFixed(1)}%"
-                    icon="disk"
-                />
-                <StatusCard
-                    title="Uptime"
-                    value={systemStatus.uptime}
-                    icon="clock"
-                />
-            </div>
+            <div class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <StatusCard
+                        title="CPU 使用率"
+                        value={`${systemStatus.cpu.usage}%`}
+                        icon="cpu"
+                    />
+                    <StatusCard
+                        title="内存使用率"
+                        value={`${systemStatus.memory.usage}%`}
+                        icon="memory"
+                    />
+                    <StatusCard
+                        title="磁盘使用率"
+                        value={`${systemStatus.disk.usage}%`}
+                        icon="disk"
+                    />
+                </div>
 
-            <div class="mt-8">
-                <ServiceList services={systemStatus.services} />
-            </div>
-
-            <div class="mt-8">
-                <SystemChart data={systemStatus} />
+                <div class="bg-white rounded-lg shadow">
+                    <SystemChart data={systemStatus.history} />
+                </div>
             </div>
         {/if}
     </main>

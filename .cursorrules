@@ -1,0 +1,107 @@
+{
+    "version": 1,
+    "rules": {
+        "general": {
+            "language": "typescript",
+            "framework": "sveltekit",
+            "packageManager": "npm",
+            "conventions": {
+                "componentNaming": "PascalCase",
+                "fileNaming": {
+                    "components": "PascalCase.svelte",
+                    "routes": "+page.svelte",
+                    "layouts": "+layout.svelte",
+                    "serverRoutes": "+page.server.ts",
+                    "layoutServers": "+layout.server.ts"
+                }
+            }
+        },
+        "svelte": {
+            "version": "^5.0.0",
+            "features": {
+                "runes": true,
+                "snippets": true,
+                "immutable": true
+            },
+            "bestPractices": {
+                "useTypeScript": true,
+                "useProps": true,
+                "useSnippets": true,
+                "avoidGlobalState": true,
+                "preferReactivity": true
+            }
+        },
+        "sveltekit": {
+            "version": "^2.0.0",
+            "routing": {
+                "useFileSystem": true,
+                "usePageJS": true
+            },
+            "loading": {
+                "preferStreaming": true
+            }
+        },
+        "styling": {
+            "framework": "tailwindcss",
+            "conventions": {
+                "useUtilityFirst": true,
+                "useContainerQueries": true,
+                "useForms": true,
+                "useTypography": true
+            }
+        },
+        "testing": {
+            "framework": "vitest",
+            "conventions": {
+                "fileNaming": "*.test.ts",
+                "coverage": true
+            }
+        },
+        "linting": {
+            "eslint": {
+                "extends": [
+                    "eslint:recommended",
+                    "plugin:svelte/recommended"
+                ]
+            },
+            "prettier": {
+                "singleQuote": true,
+                "trailingComma": "es5",
+                "printWidth": 100,
+                "plugins": [
+                    "prettier-plugin-svelte",
+                    "prettier-plugin-tailwindcss"
+                ]
+            }
+        },
+        "directory": {
+            "structure": {
+                "src/lib/components": "可重用的Svelte组件",
+                "src/lib/stores": "Svelte stores和状态管理",
+                "src/lib/utils": "工具函数和辅助方法",
+                "src/routes": "SvelteKit路由和页面组件",
+                "src/app.css": "全局样式定义",
+                "static": "静态资源文件"
+            }
+        },
+        "ai": {
+            "codeGeneration": {
+                "preferModernSyntax": true,
+                "useTypeSafety": true,
+                "componentStructure": [
+                    "imports",
+                    "props/types",
+                    "state/stores",
+                    "lifecycle",
+                    "methods",
+                    "template"
+                ]
+            },
+            "suggestions": {
+                "preferPerformance": true,
+                "accessibility": true,
+                "security": true
+            }
+        }
+    }
+} 

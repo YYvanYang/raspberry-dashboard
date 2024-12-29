@@ -1,9 +1,9 @@
 <script lang="ts">
-    import { effect, cleanup } from "svelte";
+    import { onMount, onDestroy } from "svelte";
     import { api } from "$lib/utils/api";
     import SystemChart from "$lib/components/SystemChart.svelte";
 
-    let systemData = {
+    let systemData = $state({
         labels: [] as string[],
         datasets: [
             {
@@ -15,9 +15,9 @@
                 data: [] as number[]
             }
         ]
-    };
+    });
 
-    let interval: number;
+    let interval = $state<number>();
 
     async function fetchSystemStatus() {
         try {
@@ -42,15 +42,15 @@
         }
     }
 
-    effect(() => {
+    onMount(() => {
         fetchSystemStatus();
         interval = setInterval(fetchSystemStatus, 5000);
+    });
 
-        cleanup(() => {
-            if (interval) {
-                clearInterval(interval);
-            }
-        });
+    onDestroy(() => {
+        if (interval) {
+            clearInterval(interval);
+        }
     });
 </script>
 

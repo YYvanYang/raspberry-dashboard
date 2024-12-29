@@ -1,7 +1,12 @@
 <script lang="ts">
     import { api } from "$lib/utils/api";
 
-    export let services: any[];
+    const { services } = $props<{
+        services: {
+            name: string;
+            running: boolean;
+        }[];
+    }>();
 
     async function handleServiceAction(service: string, action: string) {
         try {

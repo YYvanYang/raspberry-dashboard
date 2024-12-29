@@ -3,10 +3,10 @@
     import { api } from "$lib/utils/api";
     import { notifications } from "$lib/stores/notifications";
 
-    let currentPassword = "";
-    let newPassword = "";
-    let confirmPassword = "";
-    let updating = false;
+    let currentPassword = $state("");
+    let newPassword = $state("");
+    let confirmPassword = $state("");
+    let updating = $state(false);
 
     async function handlePasswordChange() {
         if (newPassword !== confirmPassword) {
@@ -81,7 +81,7 @@
                         <button
                             type="button"
                             disabled={updating}
-                            on:click={handlePasswordChange}
+                            onclick={handlePasswordChange}
                             class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
                         >
                             {updating ? 'Updating...' : 'Update Password'}

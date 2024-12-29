@@ -1,39 +1,41 @@
-import { writable } from "svelte/store";
+import { writable, type Writable } from 'svelte/store';
 
-interface Notification {
-    id: number;
-    type: "success" | "error";
+export type NotificationType = 'success' | 'error' | 'warning' | 'info';
+
+export interface Notification {
+    id: string;
+    type: NotificationType;
     message: string;
+    duration?: number;
 }
 
-function createNotificationsStore() {
-    const { subscribe, update } = writable<Notification[]>([]);
+function createNotificationStore() {
+    const notifications: Writable<Notification[]> = writable([]);
+    const { subscribe, update } = notifications;
 
-    let nextId = 1;
+    function addNotification(message: string, type: NotificationType = 'info', duration = 3000) {
+        const id = crypto.randomUUID();
+        update(n => [...n, { id, type, message }]);
 
-    function addNotification(type: "success" | "error", message: string) {
-        const notification: Notification = {
-            id: nextId++,
-            type,
-            message
-        };
+        if (duration > 0) {
+            setTimeout(() => {
+                removeNotification(id);
+            }, duration);
+        }
+    }
 
-        update(notifications => [...notifications, notification]);
-
-        // 3秒后自动移除
-        setTimeout(() => {
-            update(notifications => notifications.filter(n => n.id !== notification.id));
-        }, 3000);
+    function removeNotification(id: string) {
+        update(n => n.filter(notification => notification.id !== id));
     }
 
     return {
         subscribe,
-        success: (message: string) => addNotification("success", message),
-        error: (message: string) => addNotification("error", message),
-        remove: (id: number) => update(notifications => 
-            notifications.filter(n => n.id !== id)
-        )
+        success: (message: string, duration?: number) => addNotification(message, 'success', duration),
+        error: (message: string, duration?: number) => addNotification(message, 'error', duration),
+        warning: (message: string, duration?: number) => addNotification(message, 'warning', duration),
+        info: (message: string, duration?: number) => addNotification(message, 'info', duration),
+        remove: removeNotification
     };
 }
 
-export const notifications = createNotificationsStore(); 
+export const notifications = createNotificationStore(); 

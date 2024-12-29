@@ -1,15 +1,15 @@
 <script lang="ts">
-    import { effect, cleanup } from "svelte";
-    import * as echarts from "echarts/core";
-    import { LineChart } from "echarts/charts";
+    import { onMount } from 'svelte';
+    import * as echarts from 'echarts/core';
+    import { LineChart } from 'echarts/charts';
     import {
         TitleComponent,
         TooltipComponent,
         GridComponent,
         LegendComponent
-    } from "echarts/components";
-    import { UniversalTransition } from "echarts/features";
-    import { CanvasRenderer } from "echarts/renderers";
+    } from 'echarts/components';
+    import { UniversalTransition } from 'echarts/features';
+    import { CanvasRenderer } from 'echarts/renderers';
 
     echarts.use([
         TitleComponent,
@@ -21,10 +21,19 @@
         UniversalTransition
     ]);
 
-    export let data: any;
+    interface ChartData {
+        labels?: string[];
+        datasets?: Array<{
+            data: number[];
+        }>;
+    }
 
-    let chartDom: HTMLDivElement;
-    let myChart: echarts.ECharts;
+    const { data } = $props<{
+        data: ChartData;
+    }>();
+
+    let chartDom = $state<HTMLDivElement>();
+    let myChart = $state<echarts.ECharts>();
 
     const option = {
         title: {
@@ -111,26 +120,29 @@
     function initChart() {
         if (chartDom) {
             myChart = echarts.init(chartDom);
-            myChart.setOption(option);
-            
-            const resizeObserver = new ResizeObserver(() => {
-                myChart.resize();
-            });
-            resizeObserver.observe(chartDom);
+            if (myChart) {
+                myChart.setOption(option);
+                
+                const resizeObserver = new ResizeObserver(() => {
+                    myChart?.resize();
+                });
+                resizeObserver.observe(chartDom);
 
-            cleanup(() => {
-                resizeObserver.disconnect();
-                myChart.dispose();
-            });
+                return () => {
+                    resizeObserver.disconnect();
+                    myChart?.dispose();
+                };
+            }
         }
+        return () => {};
     }
 
     function updateChart() {
         if (!data || !myChart) return;
 
         const timeLabels = data.labels || [];
-        const cpuData = data.datasets[0].data || [];
-        const memoryData = data.datasets[1].data || [];
+        const cpuData = data.datasets?.[0].data || [];
+        const memoryData = data.datasets?.[1].data || [];
 
         myChart.setOption({
             xAxis: {
@@ -147,11 +159,12 @@
         });
     }
 
-    effect(() => {
-        initChart();
+    onMount(() => {
+        const cleanup = initChart();
+        return cleanup;
     });
 
-    effect(() => {
+    $effect(() => {
         if (data) {
             updateChart();
         }

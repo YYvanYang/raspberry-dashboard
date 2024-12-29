@@ -1,9 +1,11 @@
 <script lang="ts">
-    export let filter: {
-        type: string;
-        search: string;
-        dateRange: string;
-    };
+    const { filter } = $props<{
+        filter: {
+            type: string;
+            search: string;
+            dateRange: string;
+        };
+    }>();
 
     const types = ["all", "info", "warning", "error"];
     const ranges = [

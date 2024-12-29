@@ -1,14 +1,26 @@
 <script lang="ts">
-    import { onError } from 'svelte';
     import { notifications } from '$lib/stores/notifications';
     
-    let error: Error | null = null;
+    let error = $state<Error | null>(null);
     
-    onError((e) => {
-        error = e;
-        console.error('Component Error:', e);
-        notifications.error('An unexpected error occurred');
+    $effect(() => {
+        const handleError = (event: ErrorEvent) => {
+            error = event.error || new Error(event.message);
+            console.error('Component Error:', error);
+            notifications.error('An unexpected error occurred');
+            return false;
+        };
+
+        window.addEventListener('error', handleError);
+        
+        return () => {
+            window.removeEventListener('error', handleError);
+        };
     });
+
+    const slots = $props<{
+        default?: () => unknown;
+    }>();
 </script>
 
 {#if error}
@@ -19,5 +31,5 @@
         {/if}
     </div>
 {:else}
-    <slot />
+    {@render slots.default?.()}
 {/if} 

@@ -1,13 +1,15 @@
 <script lang="ts">
-    export let network: {
-        interfaces: {
-            name: string;
-            ip: string;
-            rx_bytes: number;
-            tx_bytes: number;
-            status: string;
-        }[];
-    };
+    const { network } = $props<{
+        network: {
+            interfaces: {
+                name: string;
+                ip: string;
+                rx_bytes: number;
+                tx_bytes: number;
+                status: string;
+            }[];
+        };
+    }>();
 
     function formatSpeed(bytes: number): string {
         const units = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
