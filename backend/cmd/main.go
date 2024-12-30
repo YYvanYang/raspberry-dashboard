@@ -47,8 +47,12 @@ func main() {
 
 	// 启动服务器
 	server := api.NewServer(database)
-	logger.Info("Server starting on :3001")
-	if err := server.Start(":3001"); err != nil {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3001"
+	}
+	logger.Info("Server starting on :" + port)
+	if err := server.Start(":" + port); err != nil {
 		logger.Error("Server failed to start: %v", err)
 		os.Exit(1)
 	}

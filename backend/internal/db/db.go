@@ -103,7 +103,7 @@ func (db *Database) InitSchema() error {
 
 	if count == 0 {
 		// 创建默认管理员账户
-		defaultPassword := "admin123" // 默认密码
+		defaultPassword := "Admin123!" // 默认密码(包含大小写字母、数字和特殊字符)
 		hashedPassword, err := utils.HashPassword(defaultPassword)
 		if err != nil {
 			return fmt.Errorf("failed to hash default password: %w", err)

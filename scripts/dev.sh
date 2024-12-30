@@ -15,18 +15,13 @@ fi
 
 echo "启动开发环境..."
 
-# 加载后端环境变量(过滤注释和空行)
-export $(cat "$PROJECT_ROOT/backend/.env.development" | grep -v '^#' | grep -v '^$' | xargs)
-
-# 检查必要的环境变量
-if [ -z "$JWT_SECRET" ]; then
-    echo "错误: JWT_SECRET 环境变量未设置"
-    echo "请在 backend/.env.development 中配置 JWT_SECRET"
-    exit 1
-fi
-
 # 设置环境变量
 export GO_ENV=development
+
+# 加载后端环境变量(过滤注释和空行)
+set -a
+source "$PROJECT_ROOT/backend/.env.development"
+set +a
 
 # 启动前端服务
 cd "$PROJECT_ROOT/frontend" && pnpm dev &
