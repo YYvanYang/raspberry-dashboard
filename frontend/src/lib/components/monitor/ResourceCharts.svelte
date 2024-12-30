@@ -1,140 +1,180 @@
 <script lang="ts">
-import * as echarts from 'echarts';
-import { onMount } from 'svelte';
+    // 按需引入 ECharts 核心模块
+    import * as echarts from 'echarts/core';
+    import {
+        TitleComponent,
+        ToolboxComponent,
+        TooltipComponent,
+        GridComponent,
+        LegendComponent
+    } from 'echarts/components';
+    import { LineChart } from 'echarts/charts';
+    import { UniversalTransition } from 'echarts/features';
+    import { CanvasRenderer } from 'echarts/renderers';
 
-interface ChartData {
-  cpu: number;
-  memory: number;
-  disk: number;
-  timestamp: number;
-}
+    // 注册必需的组件
+    echarts.use([
+        TitleComponent,
+        ToolboxComponent,
+        TooltipComponent,
+        GridComponent,
+        LegendComponent,
+        LineChart,
+        CanvasRenderer,
+        UniversalTransition
+    ]);
 
-// 使用 runes 声明状态和属性
-let { maxPoints = 50 } = $props<{ maxPoints?: number }>();
-let cpuChart = $state<echarts.ECharts | null>(null);
-let memoryChart = $state<echarts.ECharts | null>(null);
-let diskChart = $state<echarts.ECharts | null>(null);
+    import { onMount, onDestroy } from 'svelte';
 
-// 图表数据
-const chartData = $state<{
-  cpu: [number, number][];
-  memory: [number, number][];
-  disk: [number, number][];
-}>({
-  cpu: [],
-  memory: [],
-  disk: []
-});
+    let cpuChart: echarts.ECharts | null = null;
+    let memoryChart: echarts.ECharts | null = null;
+    let diskChart: echarts.ECharts | null = null;
 
-// 图表配置
-const baseOptions = {
-  tooltip: { trigger: 'axis' },
-  xAxis: { 
-    type: 'time',
-    axisLabel: { formatter: '{HH:mm:ss}' }
-  },
-  yAxis: { 
-    type: 'value',
-    max: 100,
-    min: 0
-  },
-  grid: {
-    left: '3%',
-    right: '4%',
-    bottom: '3%',
-    containLabel: true
-  }
-};
+    // 图表配置和数据
+    let cpuData = $state<number[]>([]);
+    let memoryData = $state<number[]>([]);
+    let diskData = $state<number[]>([]);
+    let timeData = $state<string[]>([]);
 
-const chartOptions = $derived({
-  cpu: {
-    ...baseOptions,
-    title: { text: 'CPU 使用率' },
-    series: [{
-      name: 'CPU',
-      type: 'line',
-      data: chartData.cpu,
-      areaStyle: {},
-      smooth: true
-    }]
-  },
-  memory: {
-    ...baseOptions,
-    title: { text: '内存使用率' },
-    series: [{
-      name: '内存',
-      type: 'line',
-      data: chartData.memory,
-      areaStyle: {},
-      smooth: true
-    }]
-  },
-  disk: {
-    ...baseOptions,
-    title: { text: '磁盘使用率' },
-    series: [{
-      name: '磁盘',
-      type: 'line',
-      data: chartData.disk,
-      areaStyle: {},
-      smooth: true
-    }]
-  }
-});
+    // 基础配置 - 移除对 timeData 的直接引用
+    const baseOption = {
+        title: {
+            left: 'center'
+        },
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross',
+                label: {
+                    backgroundColor: '#6a7985'
+                }
+            }
+        },
+        toolbox: {
+            feature: {
+                saveAsImage: {}
+            }
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: [] // 初始为空数组
+        },
+        yAxis: {
+            type: 'value',
+            max: 100,
+            min: 0
+        }
+    };
 
-// 初始化图表
-onMount(() => {
-  const cpuDom = document.getElementById('cpuChart');
-  const memoryDom = document.getElementById('memoryChart');
-  const diskDom = document.getElementById('diskChart');
-  
-  if (cpuDom) cpuChart = echarts.init(cpuDom);
-  if (memoryDom) memoryChart = echarts.init(memoryDom);
-  if (diskDom) diskChart = echarts.init(diskDom);
-  
-  cpuChart?.setOption(chartOptions.cpu);
-  memoryChart?.setOption(chartOptions.memory);
-  diskChart?.setOption(chartOptions.disk);
+    // 获取图表选项的函数
+    function getChartOption(title: string, data: number[]) {
+        return {
+            ...baseOption,
+            title: { text: title },
+            xAxis: {
+                ...baseOption.xAxis,
+                data: timeData // 在闭包中引用 timeData
+            },
+            series: [{
+                name: title,
+                type: 'line',
+                data: data,
+                areaStyle: {},
+                smooth: true
+            }]
+        };
+    }
 
-  const handleResize = () => {
-    cpuChart?.resize();
-    memoryChart?.resize();
-    diskChart?.resize();
-  };
+    // 初始化图表
+    function initCharts() {
+        const cpuDom = document.getElementById('cpuChart');
+        const memoryDom = document.getElementById('memoryChart');
+        const diskDom = document.getElementById('diskChart');
 
-  window.addEventListener('resize', handleResize);
-  
-  return () => {
-    window.removeEventListener('resize', handleResize);
-    cpuChart?.dispose();
-    memoryChart?.dispose();
-    diskChart?.dispose();
-  };
-});
+        if (cpuDom) {
+            cpuChart = echarts.init(cpuDom);
+            cpuChart.setOption(getChartOption('CPU 使用率 (%)', cpuData));
+        }
 
-// 更新数据方法
-export function updateData(data: ChartData) {
-  const { cpu, memory, disk, timestamp } = data;
-  
-  chartData.cpu.push([timestamp, cpu]);
-  chartData.memory.push([timestamp, memory]); 
-  chartData.disk.push([timestamp, disk]);
+        if (memoryDom) {
+            memoryChart = echarts.init(memoryDom);
+            memoryChart.setOption(getChartOption('内存使用率 (%)', memoryData));
+        }
 
-  // 保持固定数量的数据点
-  if (chartData.cpu.length > maxPoints) {
-    chartData.cpu.shift();
-    chartData.memory.shift();
-    chartData.disk.shift();
-  }
-  
-  cpuChart?.setOption(chartOptions.cpu);
-  memoryChart?.setOption(chartOptions.memory);
-  diskChart?.setOption(chartOptions.disk);
-}
+        if (diskDom) {
+            diskChart = echarts.init(diskDom);
+            diskChart.setOption(getChartOption('磁盘使用率 (%)', diskData));
+        }
+    }
+
+    // 更新图表数据
+    $effect(() => {
+        if (cpuChart && memoryChart && diskChart) {
+            cpuChart.setOption({
+                xAxis: { data: timeData },
+                series: [{ data: cpuData }]
+            });
+            memoryChart.setOption({
+                xAxis: { data: timeData },
+                series: [{ data: memoryData }]
+            });
+            diskChart.setOption({
+                xAxis: { data: timeData },
+                series: [{ data: diskData }]
+            });
+        }
+    });
+
+    // 窗口大小改变时重绘图表
+    function handleResize() {
+        cpuChart?.resize();
+        memoryChart?.resize();
+        diskChart?.resize();
+    }
+
+    onMount(() => {
+        initCharts();
+        window.addEventListener('resize', handleResize);
+    });
+
+    onDestroy(() => {
+        window.removeEventListener('resize', handleResize);
+        cpuChart?.dispose();
+        memoryChart?.dispose();
+        diskChart?.dispose();
+    });
+
+    // 导出更新数据的方法
+    export function updateData(newData: {
+        cpu: number;
+        memory: number;
+        disk: number;
+        time: string;
+    }) {
+        const MAX_DATA_POINTS = 20;
+
+        cpuData = [...cpuData.slice(-MAX_DATA_POINTS + 1), newData.cpu];
+        memoryData = [...memoryData.slice(-MAX_DATA_POINTS + 1), newData.memory];
+        diskData = [...diskData.slice(-MAX_DATA_POINTS + 1), newData.disk];
+        timeData = [...timeData.slice(-MAX_DATA_POINTS + 1), newData.time];
+    }
 </script>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-  <div class="h-[300px] bg-white rounded-lg shadow" id="cpuChart"></div>
-  <div class="h-[300px] bg-white rounded-lg shadow" id="memoryChart"></div>
-  <div class="h-[300px] bg-white rounded-lg shadow" id="diskChart"></div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="bg-white p-4 rounded-lg shadow">
+        <div id="cpuChart" class="h-64"></div>
+    </div>
+    <div class="bg-white p-4 rounded-lg shadow">
+        <div id="memoryChart" class="h-64"></div>
+    </div>
+    <div class="bg-white p-4 rounded-lg shadow">
+        <div id="diskChart" class="h-64"></div>
+    </div>
 </div> 
