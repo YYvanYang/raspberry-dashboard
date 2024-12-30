@@ -1,6 +1,8 @@
 package api
 
 import (
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/yourusername/raspberry-dashboard/internal/utils"
 )
@@ -47,8 +49,16 @@ func (s *Server) handleLogin(c *fiber.Ctx) error {
 }
 
 func (s *Server) handleLogout(c *fiber.Ctx) error {
-	// 实际应用中可能需要将token加入黑名单
-	return c.SendStatus(fiber.StatusOK)
+	// 获取当前用户信息
+	claims := c.Locals("user").(*utils.Claims)
+
+	// 记录退出日志
+	s.db.AddLog("auth", fmt.Sprintf("User %s logged out", claims.Username))
+
+	// 返回成功状态
+	return c.JSON(fiber.Map{
+		"message": "Successfully logged out",
+	})
 }
 
 func (s *Server) handleGetProfile(c *fiber.Ctx) error {

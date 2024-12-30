@@ -26,7 +26,7 @@ func NewServer(database *db.Database) *Server {
 	// 中间件
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "*",
+		AllowOrigins:     "http://localhost:5173",
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 		AllowMethods:     "GET, POST, PUT, DELETE",
 		AllowCredentials: true,
@@ -50,13 +50,13 @@ func (s *Server) Start(addr string) error {
 
 func (s *Server) setupRoutes() {
 	// API 路由组
-	api := s.app.Group("")
+	api := s.app.Group("/api")
 
 	// 公开路由
-	api.Post("/api/auth/login", s.handleLogin)
+	api.Post("/auth/login", s.handleLogin)
 
 	// 需要认证的路由
-	protected := api.Group("/", s.authMiddleware)
+	protected := api.Group("", s.authMiddleware)
 
 	// 认证相关
 	auth := protected.Group("/auth")
@@ -78,10 +78,10 @@ func (s *Server) setupRoutes() {
 
 	// 静态文件服务
 	s.app.Use("/", filesystem.New(filesystem.Config{
-		Root:         http.Dir("web"), // 前端构建文件目录
-		Browse:       false,           // 禁止目录浏览
-		Index:        "index.html",    // 默认文件
-		MaxAge:       86400,           // 缓存时间：1天
-		NotFoundFile: "index.html",    // SPA 支持：所有未匹配路由返回 index.html
+		Root:         http.Dir("web"),
+		Browse:       false,
+		Index:        "index.html",
+		MaxAge:       86400,
+		NotFoundFile: "index.html",
 	}))
 }

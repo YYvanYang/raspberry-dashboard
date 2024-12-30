@@ -2,6 +2,7 @@
     import { goto } from "$app/navigation";
     import { notifications } from "$lib/stores/notifications";
     import { api } from "$lib/utils/api";
+    import { notifyAuthChange } from "$lib/auth";
 
     let username = $state("");
     let password = $state("");
@@ -20,6 +21,7 @@
             });
 
             localStorage.setItem('token', response.token);
+            notifyAuthChange(true);
             notifications.success('登录成功');
             goto('/dashboard');
         } catch (err) {
@@ -32,21 +34,21 @@
     }
 </script>
 
-<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
+<div class="h-full flex items-center justify-center bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full">
         <div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            <h2 class="mt-2 text-center text-3xl font-extrabold text-gray-900">
                 树莓派管理系统
             </h2>
         </div>
 
         {#if error}
-            <div class="bg-red-50 p-4 rounded-md">
+            <div class="mt-8 bg-red-50 p-4 rounded-md">
                 <p class="text-sm text-red-700">{error}</p>
             </div>
         {/if}
 
-        <form onsubmit={handleLogin} class="space-y-4">
+        <form onsubmit={handleLogin} class="mt-8 space-y-4">
             <div>
                 <label for="username" class="block text-sm font-medium text-gray-700">用户名</label>
                 <input
