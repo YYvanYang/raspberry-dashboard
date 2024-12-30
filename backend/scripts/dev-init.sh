@@ -1,8 +1,15 @@
 #!/bin/bash
 
+# 获取脚本所在目录的绝对路径
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# 获取后端目录
+BACKEND_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
+
 # 设置开发环境变量
 export GO_ENV=development
 export JWT_SECRET=development_secret_key
+
+cd "$BACKEND_DIR"
 
 # 清理和下载依赖
 echo "Cleaning module cache..."
