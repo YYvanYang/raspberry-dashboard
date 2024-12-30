@@ -82,7 +82,7 @@
                         
                         <button 
                             class="bg-gray-200 px-4 py-1 rounded hover:bg-gray-300"
-                            on:click={clearFilter}
+                            onclick={clearFilter}
                         >
                             清除过滤器
                         </button>

@@ -50,7 +50,7 @@
                     <button
                         type="button"
                         class="inline-flex text-gray-400 hover:text-gray-500 focus:outline-none"
-                        on:click={() => notifications.remove(notification.id)}
+                        onclick={() => notifications.remove(notification.id)}
                     >
                         <span class="sr-only">关闭</span>
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

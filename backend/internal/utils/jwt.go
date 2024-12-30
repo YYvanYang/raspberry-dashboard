@@ -14,7 +14,12 @@ func init() {
 	// 从环境变量获取密钥
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		panic("JWT_SECRET environment variable is required")
+		// 在开发环境中使用默认密钥
+		if os.Getenv("GO_ENV") == "development" {
+			secret = "development_secret_key"
+		} else {
+			panic("JWT_SECRET environment variable is required")
+		}
 	}
 	jwtSecret = []byte(secret)
 }
