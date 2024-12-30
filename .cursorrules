@@ -59,6 +59,9 @@ I'm using svelte 5 instead of svelte 4 here is an overview of the changes.
 
 Svelte 5 introduces runes, a set of advanced primitives for controlling reactivity. The runes replace certain non-runes features and provide more explicit control over state and effects.
 
+### Package manager
+use pnpm instead of npm
+
 #### $state
 
 - **Purpose:** Declare reactive state.
