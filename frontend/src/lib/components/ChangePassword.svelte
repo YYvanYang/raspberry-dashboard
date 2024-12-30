@@ -59,6 +59,7 @@
                 type="password"
                 bind:value={currentPassword}
                 required
+                autocomplete="current-password"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
         </div>
@@ -73,6 +74,7 @@
                 bind:value={newPassword}
                 required
                 minlength="8"
+                autocomplete="new-password"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
         </div>

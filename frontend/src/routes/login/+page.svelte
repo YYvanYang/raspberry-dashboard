@@ -54,6 +54,7 @@
                     required
                     disabled={isLoading}
                     bind:value={username}
+                    autocomplete="username"
                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
             </div>
@@ -66,6 +67,7 @@
                     required
                     disabled={isLoading}
                     bind:value={password}
+                    autocomplete="current-password"
                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
             </div>
