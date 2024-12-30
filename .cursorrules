@@ -65,6 +65,9 @@ use pnpm instead of npm
 ### TypeScript
 use typescript instead of javascript if possible
 
+### Echarts
+use echarts instead of chart.js
+
 #### $state
 
 - **Purpose:** Declare reactive state.
