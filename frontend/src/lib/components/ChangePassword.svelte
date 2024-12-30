@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { toast } from 'svelte-sonner';
+    import { notifications } from '$lib/stores/notifications';
 
     let currentPassword = $state('');
     let newPassword = $state('');
@@ -34,13 +34,13 @@
         // 验证新密码
         passwordError = validatePassword(newPassword);
         if (passwordError) {
-            toast.error(passwordError);
+            notifications.error(passwordError);
             return;
         }
 
         // 验证确认密码
         if (newPassword !== confirmPassword) {
-            toast.error('两次输入的密码不一致');
+            notifications.error('两次输入的密码不一致');
             return;
         }
 
@@ -64,12 +64,12 @@
                 throw new Error(error.message || '修改密码失败');
             }
 
-            toast.success('密码修改成功');
+            notifications.success('密码修改成功');
             currentPassword = '';
             newPassword = '';
             confirmPassword = '';
         } catch (error: unknown) {
-            toast.error(error instanceof Error ? error.message : '修改密码失败');
+            notifications.error(error instanceof Error ? error.message : '修改密码失败');
         } finally {
             isSubmitting = false;
         }
@@ -79,7 +79,7 @@
 <div class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
     <h2 class="text-2xl font-bold mb-6 text-gray-800">修改密码</h2>
     
-    <form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} class="space-y-4">
+    <form on:submit|preventDefault={handleSubmit} class="space-y-4">
         <div>
             <label for="currentPassword" class="block text-sm font-medium text-gray-700">
                 当前密码
@@ -133,7 +133,7 @@
 
         <button
             type="submit"
-            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isSubmitting}
         >
             {isSubmitting ? '提交中...' : '修改密码'}

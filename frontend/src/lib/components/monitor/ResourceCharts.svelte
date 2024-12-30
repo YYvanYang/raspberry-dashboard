@@ -1,91 +1,140 @@
 <script lang="ts">
-    import { Line } from 'svelte-chartjs';
-    import {
-        Chart as ChartJS,
-        CategoryScale,
-        LinearScale,
-        PointElement,
-        LineElement,
-        Title,
-        Tooltip,
-        Legend,
-        Filler
-    } from 'chart.js';
+import * as echarts from 'echarts';
+import { onMount } from 'svelte';
 
-    ChartJS.register(
-        CategoryScale,
-        LinearScale,
-        PointElement,
-        LineElement,
-        Title,
-        Tooltip,
-        Legend,
-        Filler
-    );
+interface ChartData {
+  cpu: number;
+  memory: number;
+  disk: number;
+  timestamp: number;
+}
 
-    const { data } = $props<{
-        data: {
-            cpu: number;
-            memory: {
-                usage_rate: number;
-            };
-        }[];
-    }>();
+// 使用 runes 声明状态和属性
+let { maxPoints = 50 } = $props<{ maxPoints?: number }>();
+let cpuChart = $state<echarts.ECharts | null>(null);
+let memoryChart = $state<echarts.ECharts | null>(null);
+let diskChart = $state<echarts.ECharts | null>(null);
 
-    const chartData = $derived({
-        labels: data.map((d: { cpu: number; memory: { usage_rate: number } }) => ''),  // 使用空标签，因为我们有足够的数据点
-        datasets: [
-            {
-                label: 'CPU Usage',
-                data: data.map((d: { cpu: number; memory: { usage_rate: number } }) => d.cpu),
-                borderColor: 'rgb(59, 130, 246)',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                fill: true,
-                tension: 0.3
-            },
-            {
-                label: 'Memory Usage',
-                data: data.map((d: { cpu: number; memory: { usage_rate: number } }) => d.memory.usage_rate),
-                borderColor: 'rgb(34, 197, 94)',
-                backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                fill: true,
-                tension: 0.3
-            }
-        ]
-    });
+// 图表数据
+const chartData = $state<{
+  cpu: [number, number][];
+  memory: [number, number][];
+  disk: [number, number][];
+}>({
+  cpu: [],
+  memory: [],
+  disk: []
+});
 
-    const options = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'top' as const,
-            },
-            title: {
-                display: true,
-                text: 'System Resources History'
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                max: 100,
-                grid: {
-                    display: true,
-                    color: 'rgba(0, 0, 0, 0.1)'
-                }
-            },
-            x: {
-                grid: {
-                    display: false
-                }
-            }
-        }
-    };
+// 图表配置
+const baseOptions = {
+  tooltip: { trigger: 'axis' },
+  xAxis: { 
+    type: 'time',
+    axisLabel: { formatter: '{HH:mm:ss}' }
+  },
+  yAxis: { 
+    type: 'value',
+    max: 100,
+    min: 0
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true
+  }
+};
+
+const chartOptions = $derived({
+  cpu: {
+    ...baseOptions,
+    title: { text: 'CPU 使用率' },
+    series: [{
+      name: 'CPU',
+      type: 'line',
+      data: chartData.cpu,
+      areaStyle: {},
+      smooth: true
+    }]
+  },
+  memory: {
+    ...baseOptions,
+    title: { text: '内存使用率' },
+    series: [{
+      name: '内存',
+      type: 'line',
+      data: chartData.memory,
+      areaStyle: {},
+      smooth: true
+    }]
+  },
+  disk: {
+    ...baseOptions,
+    title: { text: '磁盘使用率' },
+    series: [{
+      name: '磁盘',
+      type: 'line',
+      data: chartData.disk,
+      areaStyle: {},
+      smooth: true
+    }]
+  }
+});
+
+// 初始化图表
+onMount(() => {
+  const cpuDom = document.getElementById('cpuChart');
+  const memoryDom = document.getElementById('memoryChart');
+  const diskDom = document.getElementById('diskChart');
+  
+  if (cpuDom) cpuChart = echarts.init(cpuDom);
+  if (memoryDom) memoryChart = echarts.init(memoryDom);
+  if (diskDom) diskChart = echarts.init(diskDom);
+  
+  cpuChart?.setOption(chartOptions.cpu);
+  memoryChart?.setOption(chartOptions.memory);
+  diskChart?.setOption(chartOptions.disk);
+
+  const handleResize = () => {
+    cpuChart?.resize();
+    memoryChart?.resize();
+    diskChart?.resize();
+  };
+
+  window.addEventListener('resize', handleResize);
+  
+  return () => {
+    window.removeEventListener('resize', handleResize);
+    cpuChart?.dispose();
+    memoryChart?.dispose();
+    diskChart?.dispose();
+  };
+});
+
+// 更新数据方法
+export function updateData(data: ChartData) {
+  const { cpu, memory, disk, timestamp } = data;
+  
+  chartData.cpu.push([timestamp, cpu]);
+  chartData.memory.push([timestamp, memory]); 
+  chartData.disk.push([timestamp, disk]);
+
+  // 保持固定数量的数据点
+  if (chartData.cpu.length > maxPoints) {
+    chartData.cpu.shift();
+    chartData.memory.shift();
+    chartData.disk.shift();
+  }
+  
+  cpuChart?.setOption(chartOptions.cpu);
+  memoryChart?.setOption(chartOptions.memory);
+  diskChart?.setOption(chartOptions.disk);
+}
 </script>
 
-<div class="bg-white shadow rounded-lg p-4">
-    <div class="h-80">
-        <Line data={chartData} {options} />
-    </div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+  <div class="h-[300px] bg-white rounded-lg shadow" id="cpuChart"></div>
+  <div class="h-[300px] bg-white rounded-lg shadow" id="memoryChart"></div>
+  <div class="h-[300px] bg-white rounded-lg shadow" id="diskChart"></div>
 </div> 
