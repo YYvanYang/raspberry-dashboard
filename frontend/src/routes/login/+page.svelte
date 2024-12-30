@@ -19,10 +19,11 @@
                 password
             });
 
-            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('token', response.token);
             notifications.success('登录成功');
             goto('/dashboard');
         } catch (err) {
+            console.error('Login error:', err);
             error = '用户名或密码错误';
             notifications.error('登录失败');
         } finally {

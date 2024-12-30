@@ -33,8 +33,11 @@ async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
             throw { error: error.error || 'An error occurred', status: response.status };
         }
 
-        return response.json();
+        const data = await response.json();
+        console.log('API Response:', data);
+        return data;
     } catch (err) {
+        console.error('API Error:', err);
         if (err instanceof Error) {
             throw { error: err.message, status: 500 };
         }
